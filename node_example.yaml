@@ -1,0 +1,51 @@
+
+#Deploy the pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-example
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: node-example
+    spec:
+      containers:
+      - name: node-example
+        image: venmaniselvan/node_docker:latest
+        ports:
+          - containerPort: 8081
+        imagePullPolicy: Always
+      imagePullSecrets:
+      - name: regcred
+---
+#Deploy the service
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-example-service
+  labels:
+    app: node-example
+spec:
+  type: NodePort
+  ports:
+    - port: 8081
+  selector:
+    app: node-example
+---
+#Configure the ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+# annotations:
+#   ingress.kubernetes.io/rewrite-target: /loyalty-level
+  name: node-example-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: node-example-service
+          servicePort: 8081
